@@ -1,6 +1,6 @@
 from typing import Optional
 
-from Payload import Payload
+from treex_ui_client.treex_ui_client.payload import Payload
 
 
 class DefaultPayload(Payload):
