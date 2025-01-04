@@ -120,7 +120,7 @@ class ThreeXClientAsync:
                 await session.close()
                 return resp
 
-    async def add_client_to_inbound(self, payload:DefaultPayload, inbound = None) -> str:
+    async def add_client_to_inbound(self, payload:DefaultPayload, inbound_id = None) -> str:
         """
         Adds a client to the specified inbound.
 
@@ -133,26 +133,34 @@ class ThreeXClientAsync:
         Raises:
         - ClientError: If there is an issue connecting to the panel or if the client encounters an error.
         """
-        if inbound is None:
-            inbound = self.inbound
+        if inbound_id is None:
+            inbound_id = self.inbound
+        else:
+            # add warning about weak inbound_id
+            if self.logger:
+                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
 
-        post_request_url = f"https://{self.base_url}/panel/api/inbounds/{self.inbound}/addClient"
+        post_request_url = f"https://{self.base_url}/panel/api/inbounds/{inbound_id}/addClient"
         resp = await self.__post_request(post_request_url, payload)
         if resp.ok:
-            sublink = self.sub_url + str(payload["settings"]["clients"][0]["subID"])  # ссылка на подписку
+            sublink = self.sub_url + payload.settings[0]["subID"]  # ссылка на подписку
             return sublink
 
-    async def get_clients_in_inbound(self, inbound = None) -> list:
+    async def get_clients_in_inbound(self, inbound_id = None) -> list:
         """
         Getting all clients on inbound
-        :param inbound:int : inbound id, if None then uses self.inbound
+        :param inbound_id:int : inbound id, if None then uses self.inbound
         :return: clients:  List of clients
         """
 
-        if inbound is None:
-            inbound = self.inbound
+        if inbound_id is None:
+            inbound_id = self.inbound
+        else:
+            # add warning about weak inbound_id
+            if self.logger:
+                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
 
-        get_request_url = f'{self.base_url}//panel/api/inbounds/get/{inbound}'
+        get_request_url = f'{self.base_url}//panel/api/inbounds/get/{inbound_id}'
 
         resp = await self.__get_request(get_request_url)
         data = await resp.text()
@@ -162,35 +170,44 @@ class ThreeXClientAsync:
             clients = data['clients']
             return clients  # возвращает список клиентов
 
-    async def delete_client(self, client_id: str, inbound=None) -> None:
+    async def delete_client(self, client_id: str, inbound_id=None) -> None:
         """
         Deleting a client by its client_id
-        :param inbound:int : inbound id, if None then uses self.inbound
+        :param inbound_id:int : inbound id, if None then uses self.inbound
         :param client_id:str :  Client id
         """
-        if inbound is None:
-            inbound = self.inbound
+        if inbound_id is None:
+            inbound_id = self.inbound
+        else:
+            # add warning about weak inbound_id
+            if self.logger:
+                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
 
-        post_request_url = f"{self.base_url}/panel/api/inbounds/{inbound}/delClient/{client_id}"
+        post_request_url = f"{self.base_url}/panel/api/inbounds/{inbound_id}/delClient/{client_id}"
 
-        resp = await self.__post_request(post_request_url, {})
+        resp = await self.__post_request(post_request_url, None)
         text = await resp.text()
         if resp.ok:
             print(text)
 
-    async def delete_depleted_clients(self) -> None:
+    async def delete_depleted_clients(self, inbound_id=None) -> None:
         """
         Deleting clients whose key has expired
         (it can be used to clean keys when, for example, 60 days are not extended)
-        :return:
         """
+        if inbound_id is None:
+            inbound_id = self.inbound
+        else:
+            # add warning about weak inbound_id
+            if self.logger:
+                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
 
-        post_request_url = f'{self.base_url}/panel/api/inbounds/delDepletedClients/{self.inbound}'
+        post_request_url = f'{self.base_url}/panel/api/inbounds/delDepletedClients/{inbound_id}'
 
-        resp = await self.__post_request(post_request_url, None)
+        await self.__post_request(post_request_url, None)
 
 
-    async def update_client(self, client_id : str, payload : DefaultPayload) -> None:
+    async def update_client(self, client_id : str, payload : DefaultPayload) -> str:
         """
         Update client info in inbound
 
@@ -202,56 +219,55 @@ class ThreeXClientAsync:
         post_request_url = f'{self.base_url}/panel/api/inbounds/updateClient/{client_id}'
         resp = await self.__post_request(post_request_url, payload)
 
+        if resp.ok:
+            return self.sub_url + payload.settings[0]["subID"]
 
-    async def info_about_key(self, client_id: str) -> (str, str):
+
+    async def info_about_key(self, client_id: str) -> dict|None:
         """
            Fetches and returns the enable status and total traffic of a specific client key.
 
            :param client_id:str : Client id
 
-           :return enable: bool : The enable status of the client key.
-           :return trafic: int : The total traffic (in bytes) of the client key.
+           :return info: dict: A info about key
 
         """
         get_request_url = f'{self.base_url}/panel/api/inbounds/getClientTrafficsById/{client_id}'
         resp = await self.__get_request(get_request_url)
         data = await resp.text()
-
-        enable = None
-        trafic = 0
         if resp.ok:
             data = json.loads(data)['obj'][0]
-            enable = data["enable"],
-            trafic = data["up"] + data["down"]
+            return data
+        else:
+            return None
 
-        return enable, trafic
+    async def info_about_all_keys(self, inbound_id = None) -> list[str]:
+        """
+          Fetches and returns the enable status of specific client keys.
 
-    # async def info_about_keys_old(self, client_ids: list[str]) -> list[str]:
-    #     """
-    #       Fetches and returns the enable status of specific client keys.
-    #
-    #       Parameters:
-    #       - client_ids (list[str]): A list of client IDs for which the information is requested.
-    #
-    #       Returns:
-    #       - list[str]: A list of enable statuses for the specified client keys.
-    #
-    #       Raises:
-    #       - ClientError: If there is an issue connecting to the panel or if the client encounters an error.
-    #     """
-    #     info = []
-    #     get_request_url = f"{self.base_url}/panel/api/inbounds/get/{self.inbound}"
-    #     resp = await self.__get_request(get_request_url)
-    #     data = await resp.text()
-    #     if resp.ok:
-    #         data = json.loads(data)['obj']['settings']
-    #         data = json.loads(data)['clients']
-    #         for client in data:
-    #             if client["id"] in client_ids:
-    #                 info.append((client["enable"]))
-    #
-    #     return info
-    #
+          :return list[str]: A list of enable statuses for the specified client keys.
+
+        """
+        if inbound_id is None:
+            inbound_id = self.inbound
+        else:
+            # add warning about weak inbound_id
+            if self.logger:
+                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
+
+        info = []
+        get_request_url = f"{self.base_url}/panel/api/inbounds/get/{inbound_id}"
+        resp = await self.__get_request(get_request_url)
+        data = await resp.text()
+        if resp.ok:
+            data = json.loads(data)['obj']['settings']
+            data = json.loads(data)['clients']
+            for client in data:
+                    info.append(client)
+
+        return info
+
+
     async def info_about_keys(self, client_ids: list[str]) -> list[str]:
         """
         Fetches and returns the enable status of specific client keys.
