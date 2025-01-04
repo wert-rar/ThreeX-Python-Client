@@ -2,7 +2,7 @@
 
 ## *Overview*
 
-*This project provides a Python* client for interacting with the **[3X-UI]() API**.
+*This project provides a Python* client for interacting with the **[3X-UI](https://github.com/MHSanaei/3x-ui) API**.
 It supports both synchronous and asynchronous operations,
 making it suitable for various use cases and performance requirements.
 
@@ -31,9 +31,9 @@ pip install treex_ui_client
 ## Usage
 
 Here are examples of working with synchronous and asynchronous clients and working with the default payload class.
-For further information, you can refer to [Documentation]() or look at usage [examples]()
+For further information, you can refer to [Documentation](https://github.com/wert-rar/ThreeX-Python-Client/blob/master/treex_ui_client/docs/Documentation.md) or look at usage [examples](https://github.com/wert-rar/ThreeX-Python-Client/tree/master/treex_ui_client/examples)
 
-To see what the methods return, it is recommended to visit this [link]() .
+To see what the methods return, it is recommended to visit this [link](https://www.postman.com/hsanaei/3x-ui/collection/q1l5l0u/3x-ui) .
 
 ### Synchronous Client Example
 
@@ -129,5 +129,5 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Contact
 
-For any issues or inquiries, please open an issue on the [GitHub repository](https://github.com/your_username/3x-ui-client).
+For any issues or inquiries, please open an issue on the [GitHub repository](https://github.com/wert-rar/ThreeX-Python-Client.git).
 
