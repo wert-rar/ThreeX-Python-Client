@@ -56,7 +56,7 @@ client = Client3XUI(
 )
 
 # Get info about all connections
-info = client.info_about_all_connections()   
+info = client.info_about_all_clients()   
 ```
 
 ### Asynchronous Client Example
@@ -83,7 +83,7 @@ async def main():
     logging_enabled=CLIENT_LOGGING_ENABLED
 )
     # Get info about all connections
-    info = await client.info_about_all_connections()
+    info = await client.info_about_all_clients()
 
 asyncio.run(main())
 ```
