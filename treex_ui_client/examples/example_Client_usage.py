@@ -4,7 +4,7 @@ import uuid
 
 
 from example_config import *
-from treex_ui_client.treex_ui_client import Client3XUI, DefaultPayload
+from treex_ui_client.treex_ui_client import Client3XUI, CLientPayload
 
 
 def main():
@@ -23,11 +23,11 @@ def main():
         logging_enabled=CLIENT_LOGGING_ENABLED
     )
 
-    client.info_about_all_clients()
+    print(client.get_clients_in_inbound())
 
     client_id = str(uuid.uuid4())
     # Add a new client to the inbound
-    new_client_payload = DefaultPayload(
+    new_client_payload = CLientPayload(
         inbound_id=INBOUND_ID,
         client_id=client_id,
         email="new_client@example.com",
@@ -37,7 +37,7 @@ def main():
         total_gb=100
     )
 
-    new_client_sublink = client.add_client_to_inbound(new_client_payload)
+    new_client_sublink = client.add_client(new_client_payload)
     print(f"New client added. Subscription link: {new_client_sublink}")
 
     # Get all clients in the inbound
@@ -45,12 +45,12 @@ def main():
     print(f"Total clients in inbound: {len(clients)}")
 
     # Get info about a specific client
-    client_info = client.info_about_client("existing_client_id")
+    client_info = client.get_client_traffic_by_id("existing_client_id")
     if client_info:
         print(f"Client info: {client_info}")
 
     # Update an existing client
-    update_payload = DefaultPayload(
+    update_payload = CLientPayload(
         inbound_id=INBOUND_ID,
         client_id=client_id,
         email="updated_email@example.com",
