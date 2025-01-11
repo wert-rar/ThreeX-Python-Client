@@ -91,9 +91,9 @@ asyncio.run(main())
 ### DefaultPayload Example
 
 ```python
-from treex_ui_client import DefaultPayload
+from treex_ui_client import CLientPayload
 
-payload = DefaultPayload(12345, "aaaa-aaaa-aaaa-aaaa",
+payload = ClientPayload(12345, "aaaa-aaaa-aaaa-aaaa",
                         "john.doe@example.com", 3,
                          17000000000,"1234567890")
 print(str(payload))
