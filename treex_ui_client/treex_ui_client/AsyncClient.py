@@ -6,7 +6,7 @@ import aiohttp
 from aiohttp import ClientResponse
 import logging
 
-from treex_ui_client.treex_ui_client.default_payload import DefaultPayload
+from treex_ui_client.treex_ui_client.ClientPayload import CLientPayload
 from treex_ui_client.treex_ui_client.payload import Payload
 from treex_ui_client.treex_ui_client.errors import ClientError
 
@@ -124,7 +124,7 @@ class AsyncClient3XUI:
                 await session.close()
                 return resp
 
-    async def add_client_to_inbound(self, payload:DefaultPayload, inbound_id = None) -> str:
+    async def add_client_to_inbound(self, payload:CLientPayload, inbound_id = None) -> str:
         """
         Adds a client to the specified inbound.
 
@@ -208,7 +208,7 @@ class AsyncClient3XUI:
         await self.__post_request(post_request_url, None)
 
 
-    async def update_client(self, client_id : str, payload : DefaultPayload) -> str:
+    async def update_client(self, client_id : str, payload : CLientPayload) -> str:
         """
         Update client info in inbound
 
