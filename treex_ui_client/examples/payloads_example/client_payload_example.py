@@ -1,10 +1,11 @@
 from pprint import pprint
+from typing import Optional
 
-from treex_ui_client.treex_ui_client import DefaultPayload
+from treex_ui_client.treex_ui_client import CLientPayload
 
 
 def get_payload(inbound_id:int, client_id, email, limitip, expirytime, subid,
-             flow="xtls-rprx-vision", total_gb=0, enable=True, reset=0, additional_fields: dict = {}):
+             flow="xtls-rprx-vision", total_gb=0, enable=True, reset=0, additional_fields: Optional[dict] = {}):
     """
       Generate a payload dictionary for client configuration.
 
@@ -34,8 +35,8 @@ def get_payload(inbound_id:int, client_id, email, limitip, expirytime, subid,
             The 'settings' key contains a JSON string with detailed client configuration.
     """
 
-    payload = DefaultPayload(inbound_id=inbound_id,client_id=client_id, email=email, limitip=limitip, expiry_time=expirytime, subid=subid,
-                             flow = flow, total_gb= total_gb, enable=enable, reset=reset, additional_fields=additional_fields)
+    payload = CLientPayload(inbound_id=inbound_id, client_id=client_id, email=email, limitip=limitip, expiry_time=expirytime, subid=subid,
+                            flow = flow, total_gb= total_gb, enable=enable, reset=reset, additional_fields=additional_fields)
     return payload.format()
 
 

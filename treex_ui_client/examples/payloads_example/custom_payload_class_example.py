@@ -1,9 +1,9 @@
 from pprint import pprint
 
-from treex_ui_client.treex_ui_client import DefaultPayload
+from treex_ui_client.treex_ui_client import CLientPayload
 
 
-class X3UIPayload(DefaultPayload):
+class X3UIPayload(CLientPayload):
     def __init__(self, inbound_id, client_id, email, limitip, expiry_time, subid, custom_field1, custom_field2):
         super().__init__(inbound_id, client_id, email, limitip, expiry_time,subid,
                          additional_fields= {"custom_field1": custom_field1, "custom_field2": custom_field2}  )
