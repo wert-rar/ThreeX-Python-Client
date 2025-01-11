@@ -6,9 +6,11 @@ from logging import Logger
 from aiohttp import InvalidURL
 from requests import Session, Response
 
-from treex_ui_client.treex_ui_client.default_payload import DefaultPayload
+from treex_ui_client.treex_ui_client import InboundPayload
+from treex_ui_client.treex_ui_client.ClientPayload import CLientPayload
 from treex_ui_client.treex_ui_client.payload import Payload
 from treex_ui_client.treex_ui_client.errors import ClientError
+from treex_ui_client.treex_ui_client.PanelResponse import PanelResponse
 
 
 class Client3XUI:
@@ -28,7 +30,7 @@ class Client3XUI:
 
 
         self.base_url = f'https://{panel_host}:{panel_port}/{root_url}' if panel_port else f'https://{panel_host}/{root_url}'
-        self.sub_url = f'https://{sub_host}:{sub_port}/{sub_path}/' if sub_port else f'https://{sub_host}/{sub_path}/'
+        self.sub_url = f'https://{sub_host}:{sub_port}/{sub_path}' if sub_port else f'https://{sub_host}/{sub_path}'
 
         self.logger: Logger | None = None
 
@@ -66,7 +68,7 @@ class Client3XUI:
                 if response.status_code == 200:
 
                     if self.logger:
-                        self.logger.info('Set client session')
+                        self.logger.info(f'Set client session [{response.status_code}]')
                     return session
                 else:
                     raise ClientError('Failed to set client session. Wrong status :', str(response.status_code))
@@ -75,11 +77,6 @@ class Client3XUI:
             if self.logger:
                 self.logger.error(f'Invalid URL: {repr(e)}')
             raise ClientError('Invalid URL', 0)
-
-        except ClientError as e:
-            if self.logger:
-                self.logger.error(repr(e))
-            raise e
 
         except Exception as e:
             if self.logger:
@@ -154,7 +151,7 @@ class Client3XUI:
 
 
 #-------------------------------------------------- Inbounds -----------------------------------------------------------
-    def get_inbounds(self):
+    def get_inbounds(self) -> PanelResponse:
         """
         Get the list of inbounds.
         """
@@ -163,9 +160,9 @@ class Client3XUI:
 
         data = self.__get_request(url).json()
 
-        return json.loads(data)
+        return PanelResponse(data)
 
-    def online_clients(self):
+    def online_clients(self)  -> PanelResponse:
         """
         Returns a list of clients that are currently online.
         """
@@ -174,7 +171,7 @@ class Client3XUI:
 
         data = self.__post_request(url, payload=None).json()
 
-        return json.load(data)
+        return PanelResponse(data)
 
 
     def reset_all_traffics(self):
@@ -204,37 +201,64 @@ class Client3XUI:
 #------------------------------------------------ Inbound --------------------------------------------------------------
 
 
-    def add_inbound(self, inbound_paload):
-        pass
+    def add_inbound(self, inbound_paload: InboundPayload) -> PanelResponse:
+        """
+        Add a new Inbound to the panel.
+        :param inbound_paload:
+        :return: PanelResponse
+        """
 
-    def get_inbound(self, inbound_id: int):
+        url = f'{self.base_url}/panel/api/inbounds/add'
+
+        response = self.__post_request(url, payload=inbound_paload).json()
+
+        return PanelResponse(response)
+
+
+    def get_inbound(self, inbound_id: int) -> PanelResponse:
         """
         Gets an inbound.
 
-        :param inbound_id: int : The ID of the inbound to get.
-        :return: dict : The inbound data.
+        :param inbound_id: Optional(int) : The ID of the inbound to get.
+        :return: PanelResponse : The inbound data.
         """
         inbound_id = self.__check_inbound(inbound_id)
 
         url = f'{self.base_url}/panel/api/inbounds/get/{inbound_id}'
 
         response = self.__get_request(url).json()
-        return json.load(response)
 
-    def update_inbound(self, inbound_payload):
-        pass
+        return PanelResponse(response)
 
-    def delete_inbound(self, inbound_id: int) -> None:
+    def update_inbound(self, inbound_payload: InboundPayload, inbound_id = None) -> PanelResponse:
+        """
+        Updates an inbound params.
+
+        :param inbound_payload: InboundPayload : The payload of the inbound to update.
+        :param inbound_id: Optional(int) : The ID of the inbound to update.
+        :return: PanelResponse
+        """
+
+        inbound_id = self.__check_inbound(inbound_id)
+
+        url = f'{self.base_url}/panel/api/inbounds/update/{inbound_id}'
+
+        response = self.__post_request(url, payload=inbound_payload).json()
+
+        return PanelResponse(response)
+
+    def delete_inbound(self, inbound_id=None) -> None:
         """
         Deletes an inbound.
 
-        :param inbound_id: int : The ID of the inbound to delete.
+        :param inbound_id: Optional(int) : The ID of the inbound to delete.
         """
         inbound_id = self.__check_inbound(inbound_id)
 
         url = f'{self.base_url}/panel/api/inbounds/del/{inbound_id}'
 
         self.__post_request(url, payload=None)
+
 
     def reset_all_clients_in_inbound(self, inbound_id=None) -> None:
         """
@@ -245,6 +269,7 @@ class Client3XUI:
         inbound_id = self.__check_inbound(inbound_id)
         url = f'{self.base_url}/panel/api/inbounds/resetAllClientTraffics/{inbound_id}'
         self.__post_request(url, payload=None)
+
 
     def delete_depleted_clients(self, inbound_id=None) -> None:
         """
@@ -257,16 +282,17 @@ class Client3XUI:
 
         self.__post_request(post_request_url, None)
 
+
     def get_clients_in_inbound(self, inbound_id=None) -> list:
         """
         Getting all clients on inbound in list
-        :param inbound_id:int : inbound id, if None then uses self.inbound
+        :param inbound_id: Optional(int) : inbound id, if None then uses self.inbound
         :return: clients:  List of clients
         """
 
         inbound_id = self.__check_inbound(inbound_id)
 
-        get_request_url = f'{self.base_url}//panel/api/inbounds/get/{inbound_id}'
+        get_request_url = f'{self.base_url}/panel/api/inbounds/get/{inbound_id}'
 
         resp = self.__get_request(get_request_url)
         data = resp.text
@@ -283,41 +309,41 @@ class Client3XUI:
 
 #------------------------------------------------ Client ---------------------------------------------------------------
 
-    def get_client_traffic(self, email: str) -> dict:
+    def get_client_traffic(self, email: str) -> PanelResponse:
         """
         Retrieves client traffic data
 
         :param email: str : the unique email of the client.
-        :return traffic: dict : A dictionary containing the client traffic data.
+        :return traffic: PanelResponse : A dictionary containing the client traffic data.
         """
 
         url = f'{self.base_url}/panel/api/inbounds/getClientTraffics/{email}'
 
         data = self.__get_request(url).json()
 
-        return json.loads(data)
+        return PanelResponse(data)
 
 
-    def  get_client_traffic_by_id(self, client_id :str):
+    def  get_client_traffic_by_id(self, client_id :str) -> PanelResponse:
         """
         Retrieves client traffic data by client id.
         :param client_id: str : the unique client id.
-        :return traffic: dict : A dictionary containing the client traffic data.
+        :return traffic: PanelResponse : A dictionary containing the client traffic data.
         """
 
         url = f'{self.base_url}/panel/api/inbounds/getClientTrafficsById/{client_id}'
 
         data = self.__get_request(url).json()
 
-        return json.loads(data)
+        return PanelResponse(data)
 
 
-    def add_client(self, payload: DefaultPayload, inbound_id=None) -> str:
+    def add_client(self, payload: CLientPayload, inbound_id=None) -> str:
         """
         Adds a client to the specified inbound.
 
-        :param payload: DefaultPayload : The payload containing the client's details.
-        :param inbound_id:int:  Inbound id, if None then uses self.inbound
+        :param payload: CLientPayload : The payload containing the client's details.
+        :param inbound_id: Optional(int) :  Inbound id, if None then uses self.inbound
         :return sublink: str : A sublink
         """
 
@@ -328,15 +354,15 @@ class Client3XUI:
         resp = self.__post_request(post_request_url, payload)
 
         if resp.ok:
-            sublink = self.sub_url + payload.settings[0]["subID"]  # ссылка на подписку
+            sublink = self.sub_url + payload.data["settings"][0]["subID"]
             return sublink
 
 
-    def update_client(self, client_id: str, payload: DefaultPayload) -> str:
+    def update_client(self, client_id: str, payload: CLientPayload) -> str:
         """
         Update client info in inbound
 
-        :param client_id:str : Client id
+        :param client_id: str : Client id
         :param payload: DefaultPayload : New client info
 
         :return: sublink: str :   Link to the subscription
@@ -345,7 +371,8 @@ class Client3XUI:
         resp = self.__post_request(post_request_url, payload)
 
         if resp.ok:
-            return self.sub_url + payload.settings[0]["subID"]
+            sublink = self.sub_url + payload.data["settings"][0]["subID"]
+            return sublink
 
 
     def delete_client(self, client_id: str, inbound_id=None) -> None:
@@ -366,17 +393,17 @@ class Client3XUI:
             print(text)
 
 
-    def client_ipaddress(self, email: str):
+    def client_ipaddress(self, email: str) -> PanelResponse:
         """
         Retrieves client's IP address.
         :param email: str : The unique email of the client.
-        :return ip: str : The client's IP address.
+        :return ip: PanelResponse : The client's IP address.
         """
 
         url = f'{self.base_url}/panel/api/inbounds/clientIps/{email}'
 
         data = self.__post_request(url,payload=None).json()
-        return json.loads(data)
+        return PanelResponse(data)
 
 
     def clear_client_ipadresses(self, email : str):
