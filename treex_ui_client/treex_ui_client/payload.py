@@ -4,16 +4,21 @@ import pprint
 
 class Payload:
 
-    def __init__(self, inbound_id:int, settings:dict):
-        self.inbound_id:int = inbound_id
-        self.settings:dict = settings
+    def __init__(self, data: dict):
+        self.data = data
 
 
     def format(self):
-        return {"inbound" : self.inbound_id, "settings": json.dumps(self.settings)}
+        formatted : dict = {}
+        for key, value in self.data.items():
+            if isinstance(value, dict):
+                formatted[key] = json.dumps(value)
+            else:
+                formatted[key] = value
+        return formatted
 
     def __str__(self):
-        return f'Inbound: {self.inbound_id},\nSettings: {pprint.pformat(self.settings)}'
+        return f'Payload\ndata = {pprint.pformat(self.data)}'
 
     def __repr__(self):
-        return f'Payload(inbound_id= {self.inbound_id}, settings={pprint.pformat(self.settings)} )'
+        return f'Payload(data = {pprint.pformat(self.data)} )'

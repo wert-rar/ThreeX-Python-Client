@@ -1,12 +1,13 @@
+import pprint
 from typing import Optional
 
 from treex_ui_client.treex_ui_client.payload import Payload
 
 
-class DefaultPayload(Payload):
+class CLientPayload(Payload):
 
     """
-    DefaultPayload class for creating or updating inbound clients in a VPN or proxy service.
+    ClientPayload class for creating or updating inbound clients in a VPN or proxy service.
     """
 
     def __init__(self, inbound_id: int, client_id: str, email: str, limitip: int,
@@ -14,7 +15,7 @@ class DefaultPayload(Payload):
                  total_gb: int = 0, enable: bool = True, reset: int = 0,
                  additional_fields: Optional[dict] = None):
         """
-        Initialize a DefaultPayload object with specified client settings.
+        Initialize a ClientPayload object with specified client settings.
 
         This constructor creates a payload with a single client configuration,
         which can be used for creating or updating inbound clients in a VPN or
@@ -48,4 +49,8 @@ class DefaultPayload(Payload):
 
         settings["clients"][0].update(additional_fields) if additional_fields else settings["clients"][0]
 
-        super().__init__(inbound_id, settings)
+        data = {"inbound" : inbound_id, "settings": settings}
+        super().__init__(data)
+
+    def __str__(self):
+        return f'ClientPayload: \nInbound: {self.data['inbound']},\nSettings: {pprint.pformat(self.data['settings'])})'
