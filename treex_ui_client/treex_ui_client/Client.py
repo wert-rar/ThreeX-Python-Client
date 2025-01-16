@@ -22,6 +22,8 @@ class Client3XUI:
 
         self.inbound = inbound_id
 
+        self.session = None
+
         self.login_payload = {
             "username": login,
             "password": password,
@@ -81,7 +83,7 @@ class Client3XUI:
         except Exception as e:
             if self.logger:
                 self.logger.error(f'Failed to set client session.\nError: {repr(e)}')
-            raise ClientError('Failed to set client session \nError: {repr(e)}', 0)
+            raise ClientError(f'Failed to set client session \nError: {repr(e)}', 0)
 
 
     def __post_request(self, url: str, payload: Payload | None) -> Response:
@@ -102,7 +104,11 @@ class Client3XUI:
 
 
         try:
-            resp = self.session.post(url, data=payload.format())
+            if payload is None:
+                resp = self.session.post(url, data=payload)
+            else:
+                resp = self.session.post(url, data=payload.format())
+            
             if self.logger:
                 self.logger.info(f'POST {url} [{resp.status_code}]')
             return resp
@@ -335,27 +341,30 @@ class Client3XUI:
 
         data = self.__get_request(url).json()
 
+        print(data)
+
         return PanelResponse(data)
 
 
-    def add_client(self, payload: CLientPayload, inbound_id=None) -> str:
+    def add_client(self, payload: CLientPayload) -> str:
         """
         Adds a client to the specified inbound.
 
         :param payload: CLientPayload : The payload containing the client's details.
-        :param inbound_id: Optional(int) :  Inbound id, if None then uses self.inbound
         :return sublink: str : A sublink
         """
 
-        inbound_id = self.__check_inbound(inbound_id)
 
-        post_request_url = f"https://{self.base_url}/panel/api/inbounds/{inbound_id}/addClient"
+        post_request_url = f"{self.base_url}/panel/api/inbounds/addClient"
 
         resp = self.__post_request(post_request_url, payload)
 
         if resp.ok:
-            sublink = self.sub_url + payload.data["settings"][0]["subID"]
+            sublink = self.sub_url + payload.data["settings"]["clients"][0]["subId"]
             return sublink
+        else:
+            print(f"Error: {resp.text}")
+            return None
 
 
     def update_client(self, client_id: str, payload: CLientPayload) -> str:
@@ -371,7 +380,8 @@ class Client3XUI:
         resp = self.__post_request(post_request_url, payload)
 
         if resp.ok:
-            sublink = self.sub_url + payload.data["settings"][0]["subID"]
+            print(payload.data["settings"]["clients"][0])
+            sublink = self.sub_url + payload.data["settings"]["clients"][0]["subId"]
             return sublink
 
 

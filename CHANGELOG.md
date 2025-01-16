@@ -26,3 +26,13 @@ some methods like `add_client` and `update_client` return sublink as sublink
   - Change how format works
 - Rename `DefaultPayload` to `ClientPayload`
 
+## [1.0.1] - 11.01.2025
+
+### Fixed
+- Fix issue with Client3XUI
+  - Fix add_client 
+  - Fix update_client
+
+
+
+
