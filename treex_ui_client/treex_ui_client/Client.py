@@ -341,8 +341,6 @@ class Client3XUI:
 
         data = self.__get_request(url).json()
 
-        print(data)
-
         return PanelResponse(data)
 
 
@@ -363,7 +361,6 @@ class Client3XUI:
             sublink = self.sub_url + payload.data["settings"]["clients"][0]["subId"]
             return sublink
         else:
-            print(f"Error: {resp.text}")
             return None
 
 
@@ -380,7 +377,6 @@ class Client3XUI:
         resp = self.__post_request(post_request_url, payload)
 
         if resp.ok:
-            print(payload.data["settings"]["clients"][0])
             sublink = self.sub_url + payload.data["settings"]["clients"][0]["subId"]
             return sublink
 
@@ -398,9 +394,6 @@ class Client3XUI:
 
         resp = self.__post_request(post_request_url, None)
         text = resp.text
-
-        if resp.ok:
-            print(text)
 
 
     def client_ipaddress(self, email: str) -> PanelResponse:
