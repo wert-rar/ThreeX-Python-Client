@@ -6,7 +6,9 @@ import aiohttp
 from aiohttp import ClientResponse
 import logging
 
+from treex_ui_client.treex_ui_client import InboundPayload
 from treex_ui_client.treex_ui_client.ClientPayload import CLientPayload
+from treex_ui_client.treex_ui_client.PanelResponse import PanelResponse
 from treex_ui_client.treex_ui_client.payload import Payload
 from treex_ui_client.treex_ui_client.errors import ClientError
 
@@ -91,7 +93,7 @@ class AsyncClient3XUI:
             except Exception as e:
                 if self.logger:
                     self.logger.error(f'Failed to send POST request.\nUrl: {url}\nPayload : {payload}\nError: {repr(e)}')
-                raise ClientError('Client error: ' + repr(e))
+                raise ClientError('Client error: ' + repr(e), resp.status)
             finally:
                 await session.close()
 
@@ -119,100 +121,240 @@ class AsyncClient3XUI:
                 if self.logger:
                     self.logger.info(f'GET {url} [{resp.status}]')
             except Exception as e:
-                raise ClientError('Client error: ' + repr(e))
+                raise ClientError('Client error: ' + repr(e),resp.status)
             finally:
                 await session.close()
                 return resp
 
-    async def add_client_to_inbound(self, payload:CLientPayload, inbound_id = None) -> str:
+    def __check_inbound(self, inbound_id: int | None) -> int:
         """
-        Adds a client to the specified inbound.
+        Check if the given inbound_id is None and return self.inbound if it is.
+        Otherwise, log a warning and return the given inbound_id.
 
-        :param inbound_id: int : inbound id, if None then uses self.inbound
-        :param payload: DefaultPayload : The payload containing the client's details.
-
-        :return sublink: str : A sublink
-        """
-
-        if inbound_id is None:
-            inbound_id = self.inbound
-        else:
-            # add warning about weak inbound_id
-            if self.logger:
-                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
-
-        post_request_url = f"https://{self.base_url}/panel/api/inbounds/{inbound_id}/addClient"
-        resp = await self.__post_request(post_request_url, payload)
-        if resp.ok:
-            sublink = self.sub_url + payload.settings[0]["subID"]  # ссылка на подписку
-            return sublink
-
-    async def get_clients_in_inbound(self, inbound_id = None) -> list:
-        """
-        Getting all clients on inbound
-        :param inbound_id:int : inbound id, if None then uses self.inbound
-        :return: clients:  List of clients
-        """
-
-        if inbound_id is None:
-            inbound_id = self.inbound
-        else:
-            # add warning about weak inbound_id
-            if self.logger:
-                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
-
-        get_request_url = f'{self.base_url}//panel/api/inbounds/get/{inbound_id}'
-
-        resp = await self.__get_request(get_request_url)
-        data = await resp.text()
-        if resp.ok:
-            data = json.loads(data)
-            data = json.loads(data['obj']['settings'])
-            clients = data['clients']
-            return clients  # возвращает список клиентов
-
-    async def delete_client(self, client_id: str, inbound_id=None) -> None:
-        """
-        Deleting a client by its client_id
-        :param inbound_id:int : inbound id, if None then uses self.inbound
-        :param client_id:str :  Client id
+        :param inbound_id: The inbound ID to check
+        :return: The inbound ID to use
         """
         if inbound_id is None:
-            inbound_id = self.inbound
+            return self.inbound
         else:
-            # add warning about weak inbound_id
             if self.logger:
                 self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
+            return inbound_id
 
-        post_request_url = f"{self.base_url}/panel/api/inbounds/{inbound_id}/delClient/{client_id}"
 
-        resp = await self.__post_request(post_request_url, None)
-        text = await resp.text()
-        if resp.ok:
-            print(text)
+#-------------------------------------------------- Inbounds -----------------------------------------------------------
+    async def get_inbounds(self) -> PanelResponse:
+        """
+        Get the list of inbounds.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/list'
+
+        data = await self.__get_request(url)
+
+        return PanelResponse(await data.json())
+
+    async def online_clients(self)  -> PanelResponse:
+        """
+        Returns a list of clients that are currently online.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/onlines'
+
+        data = await self.__post_request(url, payload=None)
+
+        return PanelResponse(await data.json())
+
+
+    async def reset_all_traffics(self):
+        """
+        Resets all client's traffic data.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/resetAllTraffics'
+        await self.__post_request(url, payload=None)
+        if self.logger:
+            self.logger.info('All clients traffic data reset')
+
+    async def create_backup(self):
+        """
+        Creates a backup of the panel
+        Make a get request to a panel, that triggers the creation of a system backup and initiates
+        the delivery of the backup file to designated administrators via a configured Telegram bot.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/createbackup'
+        await self.__get_request(url)
+        if self.logger:
+            self.logger.info('Panel backup created')
+
+#-------------------------------------------------- Inbounds -----------------------------------------------------------
+
+#------------------------------------------------ Inbound --------------------------------------------------------------
+
+
+    async def add_inbound(self, inbound_paload: InboundPayload) -> PanelResponse:
+        """
+        Add a new Inbound to the panel.
+        :param inbound_paload:
+        :return: PanelResponse
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/add'
+
+        response = await self.__post_request(url, payload=inbound_paload)
+
+        return PanelResponse(await response.json())
+
+
+    async def get_inbound(self, inbound_id: int) -> PanelResponse:
+        """
+        Gets an inbound.
+
+        :param inbound_id: Optional(int) : The ID of the inbound to get.
+        :return: PanelResponse : The inbound data.
+        """
+        inbound_id = self.__check_inbound(inbound_id)
+
+        url = f'{self.base_url}/panel/api/inbounds/get/{inbound_id}'
+
+        response = await self.__get_request(url)
+
+        return PanelResponse(await response.json())
+
+    async def update_inbound(self, inbound_payload: InboundPayload, inbound_id = None) -> PanelResponse:
+        """
+        Updates an inbound params.
+
+        :param inbound_payload: InboundPayload : The payload of the inbound to update.
+        :param inbound_id: Optional(int) : The ID of the inbound to update.
+        :return: PanelResponse
+        """
+
+        inbound_id = self.__check_inbound(inbound_id)
+
+        url = f'{self.base_url}/panel/api/inbounds/update/{inbound_id}'
+
+        response = await self.__post_request(url, payload=inbound_payload)
+
+        return PanelResponse(await response.json())
+
+    async def delete_inbound(self, inbound_id=None) -> None:
+        """
+        Deletes an inbound.
+
+        :param inbound_id: Optional(int) : The ID of the inbound to delete.
+        """
+        inbound_id = self.__check_inbound(inbound_id)
+
+        url = f'{self.base_url}/panel/api/inbounds/del/{inbound_id}'
+
+        await self.__post_request(url, payload=None)
+
+
+    async def reset_all_clients_in_inbound(self, inbound_id=None) -> None:
+        """
+        Resets all clients in the specified inbound.
+
+        :param inbound_id: Optional(int) :  Inbound id, if None then uses self.inbound
+        """
+        inbound_id = self.__check_inbound(inbound_id)
+        url = f'{self.base_url}/panel/api/inbounds/resetAllClientTraffics/{inbound_id}'
+        await self.__post_request(url, payload=None)
+
 
     async def delete_depleted_clients(self, inbound_id=None) -> None:
         """
         Deleting clients whose key has expired
         (it can be used to clean keys when, for example, 60 days are not extended)
         """
-        if inbound_id is None:
-            inbound_id = self.inbound
-        else:
-            # add warning about weak inbound_id
-            if self.logger:
-                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
+        inbound_id = self.__check_inbound(inbound_id)
 
         post_request_url = f'{self.base_url}/panel/api/inbounds/delDepletedClients/{inbound_id}'
 
         await self.__post_request(post_request_url, None)
 
 
-    async def update_client(self, client_id : str, payload : CLientPayload) -> str:
+    async def get_clients_in_inbound(self, inbound_id=None) -> list:
+        """
+        Getting all clients on inbound in list
+        :param inbound_id: Optional(int) : inbound id, if None then uses self.inbound
+        :return: clients:  List of clients
+        """
+
+        inbound_id = self.__check_inbound(inbound_id)
+
+        get_request_url = f'{self.base_url}/panel/api/inbounds/get/{inbound_id}'
+
+        resp = await self.__get_request(get_request_url)
+        data = await resp.text()
+
+        if resp.ok:
+            data = json.loads(data)
+            data = json.loads(data['obj']['settings'])
+            clients = data['clients']
+            return clients  # возвращает список клиентов
+
+#------------------------------------------------ Inbound --------------------------------------------------------------
+
+
+
+#------------------------------------------------ Client ---------------------------------------------------------------
+
+    async def get_client_traffic(self, email: str) -> PanelResponse:
+        """
+        Retrieves client traffic data
+
+        :param email: str : the unique email of the client.
+        :return traffic: PanelResponse : A dictionary containing the client traffic data.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/getClientTraffics/{email}'
+
+        data = await self.__get_request(url)
+
+        return PanelResponse(await data.json())
+
+
+    async def  get_client_traffic_by_id(self, client_id :str) -> PanelResponse:
+        """
+        Retrieves client traffic data by client id.
+        :param client_id: str : the unique client id.
+        :return traffic: PanelResponse : A dictionary containing the client traffic data.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/getClientTrafficsById/{client_id}'
+
+        data = await self.__get_request(url)
+
+        return PanelResponse(await data.json())
+
+
+    async def add_client(self, payload: CLientPayload) -> str:
+        """
+        Adds a client to the specified inbound.
+
+        :param payload: CLientPayload : The payload containing the client's details.
+        :return sublink: str : A sublink
+        """
+
+
+        post_request_url = f"{self.base_url}/panel/api/inbounds/addClient"
+
+        resp = await self.__post_request(post_request_url, payload)
+
+        if resp.ok:
+            sublink = self.sub_url + payload.data["settings"]["clients"][0]["subId"]
+            return sublink
+        else:
+            raise ClientError("Couldn't connect to panel", resp.status)
+
+
+    async def update_client(self, client_id: str, payload: CLientPayload) -> str:
         """
         Update client info in inbound
 
-        :param client_id:str : Client id
+        :param client_id: str : Client id
         :param payload: DefaultPayload : New client info
 
         :return: sublink: str :   Link to the subscription
@@ -221,73 +363,59 @@ class AsyncClient3XUI:
         resp = await self.__post_request(post_request_url, payload)
 
         if resp.ok:
-            return self.sub_url + payload.settings[0]["subID"]
-
-
-    async def info_about_key(self, client_id: str) -> dict|None:
-        """
-           Fetches and returns the enable status and total traffic of a specific client key.
-
-           :param client_id:str : Client id
-
-           :return info: dict: A info about key
-
-        """
-        get_request_url = f'{self.base_url}/panel/api/inbounds/getClientTrafficsById/{client_id}'
-        resp = await self.__get_request(get_request_url)
-        data = await resp.text()
-        if resp.ok:
-            data = json.loads(data)['obj'][0]
-            return data
+            sublink = self.sub_url + payload.data["settings"]["clients"][0]["subId"]
+            return sublink
         else:
-            return None
+            raise ClientError("Couldn't connect to panel", resp.status)
 
-    async def info_about_all_keys(self, inbound_id = None) -> list[str]:
+
+    async def delete_client(self, client_id: str, inbound_id=None) -> None:
         """
-          Fetches and returns the enable status of specific client keys.
-
-          :return list[str]: A list of enable statuses for the specified client keys.
-
+        Deleting a client by its client_id
+        :param inbound_id:int : inbound id, if None then uses self.inbound
+        :param client_id:str :  Client id
         """
-        if inbound_id is None:
-            inbound_id = self.inbound
-        else:
-            # add warning about weak inbound_id
-            if self.logger:
-                self.logger.warning(f'Using weak inbound_id: {inbound_id}. Consider using the inbound id of client')
 
-        info = []
-        get_request_url = f"{self.base_url}/panel/api/inbounds/get/{inbound_id}"
-        resp = await self.__get_request(get_request_url)
-        data = await resp.text()
-        if resp.ok:
-            data = json.loads(data)['obj']['settings']
-            data = json.loads(data)['clients']
-            for client in data:
-                    info.append(client)
+        inbound_id = self.__check_inbound(inbound_id)
 
-        return info
+        post_request_url = f"{self.base_url}/panel/api/inbounds/{inbound_id}/delClient/{client_id}"
+
+        await self.__post_request(post_request_url, None)
 
 
-    async def info_about_keys(self, client_ids: list[str]) -> list[str]:
+    async def client_ipaddress(self, email: str) -> PanelResponse:
         """
-        Fetches and returns the enable status of specific client keys.
-
-        :param client_ids: list[str] : A list of client IDs for which the information is requested.
-        :return: list: list[dict] : A list of info about keys.
-
+        Retrieves client's IP address.
+        :param email: str : The unique email of the client.
+        :return ip: PanelResponse : The client's IP address.
         """
-        info = []
-        for client_id in client_ids:
-            get_request_url = f'{self.base_url}/panel/api/inbounds/getClientTrafficsById/{client_id}'
 
-            resp = await self.__get_request(get_request_url)
+        url = f'{self.base_url}/panel/api/inbounds/clientIps/{email}'
 
-            data = await resp.text()
-            if resp.ok:
-                data = json.loads(data)['obj'][0]
-                info.append(data)
+        data = await self.__post_request(url,payload=None)
+        return PanelResponse(await data.json())
 
-        return info
 
+    async def clear_client_ipadresses(self, email : str):
+        """
+        Clears client's IP address.
+        :param email: str : The unique email of the client.
+        """
+
+        url = f'{self.base_url}/panel/api/inbounds/clearClientIps/{email}'
+        await self.__post_request(url, payload=None)
+
+
+    async def reset_client_traffic(self,email: str, inbound_id = None) -> None:
+        """
+        Resets client's traffic data.
+
+        :param email: str : The unique email of the client.
+        :param inbound_id: Optional(int) :  Inbound id, if None then uses self.inbound
+        """
+        inbound_id = self.__check_inbound(inbound_id)
+        url = f'{self.base_url}/panel/api/inbounds/{inbound_id}/resetClientTraffic/{email}'
+        await self.__post_request(url, payload=None)
+
+# ------------------------------------------------ Client ---------------------------------------------------------------
 
