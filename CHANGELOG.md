@@ -7,10 +7,14 @@ and this project uses [Semantic Versioning](http://semver.org/).
 ### Added
 The core of the project has been added and the project structure has been created.
 
+--- 
+
 ## [0.1.0] - 06.01.2025
 ### Added
 - Add almost all API methods for Client3XUI
 - Add  `__check_inbound` that checks if inbound_id is safe
+
+--- 
 
 ## [1.0.0] - 08.01.2025
 ### Added
@@ -33,6 +37,17 @@ some methods like `add_client` and `update_client` return sublink as sublink
   - Fix add_client 
   - Fix update_client
 
+--- 
+
+## [1.1.0] - 16.01.2025
+
+### Added
+- Add `AsyncClient3XUI` methods realisation
+- Add doc strings to `ClientError`
+
+### Changed
 
 
+### Fixed
+- Delete prints in classes methods
 
