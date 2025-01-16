@@ -47,6 +47,7 @@ if __name__ == "__main__":
     print('Payload 1 (without custom fields)')
     pprint(payload1)
     print()
+
     # Example usage with custom fields
     payload2 = get_payload(12345, 'aaaa-aaaa-aaaa-aaaa', 'aaaaaaa', 3, 1700000000, 'dbakdahadjwhwadba', additional_fields={'tgId': 1234567890})
     print('Payload 2 (with custom fields)')

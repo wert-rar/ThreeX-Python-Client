@@ -2,7 +2,7 @@ import asyncio
 import logging
 import uuid
 
-from treex_ui_client.treex_ui_client import AsyncClient3XUI, DefaultPayload
+from treex_ui_client.treex_ui_client import AsyncClient3XUI, CLientPayload
 
 from example_config import *
 
@@ -25,7 +25,7 @@ async def main():
 
     client_id = str(uuid.uuid4())
     # Add a new client to the inbound
-    new_client_payload = DefaultPayload(
+    new_client_payload = CLientPayload(
         inbound_id=INBOUND_ID,
         client_id = client_id,
         email="client@example.com",
@@ -48,7 +48,7 @@ async def main():
         print(f"Client info: {client_info}")
 
     # Update an existing client
-    update_payload = DefaultPayload(
+    update_payload = CLientPayload(
         inbound_id=INBOUND_ID,
         client_id=client_id,
         email="client@example.com",
