@@ -62,7 +62,7 @@ client = Client3XUI(
 )
 
 # Get info about all connections
-info = client.info_about_all_connections()   
+info = client.info_about_all_clients()   
 ```
 
 ### Asynchronous Client Example
@@ -89,7 +89,7 @@ async def main():
     logging_enabled=CLIENT_LOGGING_ENABLED
 )
     # Get info about all connections
-    info = await client.info_about_all_connections()
+    info = await client.info_about_all_clients()
 
 asyncio.run(main())
 ```
@@ -97,9 +97,9 @@ asyncio.run(main())
 ### DefaultPayload Example
 
 ```python
-from treex_ui_client import DefaultPayload
+from treex_ui_client import CLientPayload
 
-payload = DefaultPayload(12345, "aaaa-aaaa-aaaa-aaaa",
+payload = ClientPayload(12345, "aaaa-aaaa-aaaa-aaaa",
                         "john.doe@example.com", 3,
                          17000000000,"1234567890")
 print(str(payload))
@@ -118,6 +118,7 @@ print(str(payload))
 
 ```
 ---
+
 
 
 ## Contributing
