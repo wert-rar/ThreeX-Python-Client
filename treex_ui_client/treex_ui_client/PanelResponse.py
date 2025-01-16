@@ -10,8 +10,6 @@ class PanelResponse:
         self.success = response.get('success', False)
         self.message = response.get('message', '')
         self.obj = response.get('obj', None)
-        if self.obj is not None:
-            self.obj = json.loads(self.obj)
 
     def __repr__(self):
         return ('PanelResponse object (\n'
