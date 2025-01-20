@@ -2,6 +2,7 @@ import json
 import logging
 
 from logging import Logger
+from typing import Optional
 
 from aiohttp import InvalidURL
 from requests import Session, Response
@@ -51,7 +52,7 @@ class Client3XUI:
         self.session = self.__get_session()
 
         if self.session is None:
-            raise ClientError('Failed to set client session')
+            raise ClientError('Failed to set client session',0)
 
 
 
@@ -73,7 +74,7 @@ class Client3XUI:
                         self.logger.info(f'Set client session [{response.status_code}]')
                     return session
                 else:
-                    raise ClientError('Failed to set client session. Wrong status :', str(response.status_code))
+                    raise ClientError('Failed to set client session. Wrong status :', response.status_code)
 
         except InvalidURL as e:
             if self.logger:
@@ -221,7 +222,7 @@ class Client3XUI:
         return PanelResponse(response)
 
 
-    def get_inbound(self, inbound_id: int) -> PanelResponse:
+    def get_inbound(self, inbound_id: Optional[int] = None) -> PanelResponse:
         """
         Gets an inbound.
 
@@ -391,9 +392,7 @@ class Client3XUI:
         inbound_id = self.__check_inbound(inbound_id)
 
         post_request_url = f"{self.base_url}/panel/api/inbounds/{inbound_id}/delClient/{client_id}"
-
-        resp = self.__post_request(post_request_url, None)
-        text = resp.text
+        self.__post_request(post_request_url, None)
 
 
     def client_ipaddress(self, email: str) -> PanelResponse:
