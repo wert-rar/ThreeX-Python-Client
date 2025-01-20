@@ -82,6 +82,7 @@ async def main():
     sub_port=SUB_PORT,
     logging_enabled=CLIENT_LOGGING_ENABLED
 )
+    client.start()
     # Get info about all connections
     info = await client.info_about_all_clients()
 
