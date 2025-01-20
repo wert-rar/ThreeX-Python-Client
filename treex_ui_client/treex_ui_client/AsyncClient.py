@@ -42,9 +42,20 @@ class AsyncClient3XUI:
 
         self.cookie = None
         self.timeout = timeout
+        self.task = None
 
 
-        asyncio.create_task(self.update_cookies_periodically())
+
+    def __del__(self):
+
+        if hasattr(self, 'task') and self.task:
+            self.task.cancel()
+            if self.logger:
+                    self.logger.info('Background task was cancelled.')
+
+    async def start(self):
+        self.task = asyncio.create_task(self.update_cookies_periodically())
+
 
     async def __fetch_cookies(self):
         """Get new cookies from server by /login POST request"""
@@ -52,7 +63,7 @@ class AsyncClient3XUI:
             async with aiohttp.ClientSession() as session:
                 async with session.post(f'{self.base_url}/login', data=self.login_payload) as response:
                     if response.status == 200:
-                        self.cookie = session.cookie_jar
+                        self.cookie = session.cookie_jar.filter_cookies(f'{self.base_url}')
                         if self.logger:
                             self.logger.info('Updated cookies. ')
                     else:
@@ -64,12 +75,14 @@ class AsyncClient3XUI:
 
 
     async def update_cookies_periodically(self):
-        """Update cookies every  5 minutes."""
+        """Update cookies every  timeout seconds"""
         while True:
             await self.__fetch_cookies()
             await asyncio.sleep(self.timeout)
 
     async def __post_request(self, url: str, payload: Payload|None) -> ClientResponse:
+        if not self.cookie:
+            await self.__fetch_cookies()
         """
             Sends an asynchronous POST request to a specified URL with the given payload.
 
@@ -84,11 +97,14 @@ class AsyncClient3XUI:
 
             :raise: ClientError: If there is an issue connecting to the panel or if the client encounters an error.
         """
+
         async with aiohttp.ClientSession() as session:
             try:
+
                 resp = await session.post(url, data=payload.format(), cookies=self.cookie)
                 if self.logger:
                     self.logger.info(f'POST {url} [{resp.status}]')
+                return resp
 
             except Exception as e:
                 if self.logger:
@@ -97,7 +113,7 @@ class AsyncClient3XUI:
             finally:
                 await session.close()
 
-                return resp
+
 
     async def __get_request(self, url: str) -> ClientResponse:
         """
@@ -115,16 +131,19 @@ class AsyncClient3XUI:
         Raises:
         ClientError: If there is an issue connecting to the panel or if the client encounters an error.
         """
+        if not self.cookie:
+            await self.__fetch_cookies()
         async with aiohttp.ClientSession() as session:
             try:
                 resp = await session.get(url,cookies=self.cookie)
                 if self.logger:
                     self.logger.info(f'GET {url} [{resp.status}]')
+                return resp
             except Exception as e:
-                raise ClientError('Client error: ' + repr(e),resp.status)
+                raise ClientError('Client error: ' + repr(e),0)
             finally:
                 await session.close()
-                return resp
+
 
     def __check_inbound(self, inbound_id: int | None) -> int:
         """
