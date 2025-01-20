@@ -77,3 +77,9 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+*.pyc
+/.idea
+treex_ui_client/tests/test_config.py
+treex_ui_client/examples/example_config.py
+treex_ui_client/examples/example_config.py
+treex_ui_client/examples/example_config.py
