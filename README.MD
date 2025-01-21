@@ -37,7 +37,7 @@ pip install client3x
 ## Usage
 
 Here are examples of working with synchronous and asynchronous clients and working with the default payload class.
-For further information, you can refer to [Documentation](https://github.com/wert-rar/ThreeX-Python-Client/blob/master/treex_ui_client/docs/Documentation.md) or look at usage [examples](https://github.com/wert-rar/ThreeX-Python-Client/tree/master/treex_ui_client/examples)
+For further information, you can refer to [Documentation](https://github.com/wert-rar/ThreeX-Python-Client/blob/master/client3x/docs/Documentation.md) or look at usage [examples](https://github.com/wert-rar/ThreeX-Python-Client/tree/master/client3x/examples)
 
 To see what the methods return, it is recommended to visit this [link](https://www.postman.com/hsanaei/3x-ui/collection/q1l5l0u/3x-ui) .
 
