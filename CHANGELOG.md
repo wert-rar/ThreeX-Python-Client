@@ -4,13 +4,23 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project uses [Semantic Versioning](http://semver.org/).
 ---
 
+## [1.2.0] - 21.01.2025
+
+### Added
+- Add `AsyncClient3XUI`.`from_env` methods realisation
+- Add `AsyncClient3XUI`.`from_env` methods realisation
+- Add `Documentation.md`
+
+### Changed
+- Change package name to `client3x`
+
 ## [1.1.0] - 20.01.2025
 
 ### Added
 - Add `AsyncClient3XUI` methods realisation
 - Add doc strings to `ClientError`
 - Add `AsyncClient3XUI.start()` method
-- 
+
 ### Changed
 - Update readme.md
 - Update `AsyncClient3XUI` examples
