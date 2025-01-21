@@ -6,11 +6,11 @@ import aiohttp
 from aiohttp import ClientResponse
 import logging
 
-from treex_ui_client.treex_ui_client import InboundPayload
-from treex_ui_client.treex_ui_client.ClientPayload import CLientPayload
-from treex_ui_client.treex_ui_client.PanelResponse import PanelResponse
-from treex_ui_client.treex_ui_client.payload import Payload
-from treex_ui_client.treex_ui_client.errors import ClientError
+from client3x.client3x import InboundPayload
+from client3x.client3x.ClientPayload import CLientPayload
+from client3x.client3x.PanelResponse import PanelResponse
+from client3x.client3x.payload import Payload
+from client3x.client3x.errors import ClientError
 
 class AsyncClient3XUI:
     def __init__(self, login, password, login_key, panel_host, root_url, sub_host, sub_path, inbound_id, panel_port = None, sub_port = None, logging_enabled = False,timeout = 300):

@@ -1,6 +1,6 @@
 import json
 import unittest
-from treex_ui_client.treex_ui_client import InboundPayload
+from client3x.client3x import InboundPayload
 
 
 class InboundPayloadTest(unittest.TestCase):

@@ -3,6 +3,7 @@
 ## *Overview*
 
 *This project provides a Python* client for interacting with the **[3X-UI](https://github.com/MHSanaei/3x-ui) API**.
+
 It supports both synchronous and asynchronous operations,
 making it suitable for various use cases and performance requirements.
 
@@ -17,7 +18,7 @@ making it suitable for various use cases and performance requirements.
 ## Installation
 
 ```bash
-pip install treex_ui_client
+pip install client3x
 ```
 
 ---
@@ -38,8 +39,9 @@ To see what the methods return, it is recommended to visit this [link](https://w
 ### Synchronous Client Example
 
 ```python
-from treex_ui_client import Client3XUI
+from client3x import Client3XUI
 from config import *
+
 # Initialize the client
 client = Client3XUI(
     login=PANEL_LOGIN,
@@ -63,28 +65,29 @@ info = client.info_about_all_clients()
 
 ```python
 import asyncio
-from treex_ui_client import AsyncClient3XUI
+from client3x import AsyncClient3XUI
 from config import *
 
+
 async def main():
-   
     # Initialize the client
     client = AsyncClient3XUI(
-    login=PANEL_LOGIN,
-    password=PANEL_PASSWORD,
-    login_key=PANEL_SECRET_KEY,
-    panel_host=PANEL_HOST,
-    root_url=PANEL_ROOT_URL,
-    sub_host=SUB_HOST,
-    sub_path=SUB_PATH,
-    inbound_id=INBOUND_ID,
-    panel_port=PANEL_PORT,
-    sub_port=SUB_PORT,
-    logging_enabled=CLIENT_LOGGING_ENABLED
-)
+        login=PANEL_LOGIN,
+        password=PANEL_PASSWORD,
+        login_key=PANEL_SECRET_KEY,
+        panel_host=PANEL_HOST,
+        root_url=PANEL_ROOT_URL,
+        sub_host=SUB_HOST,
+        sub_path=SUB_PATH,
+        inbound_id=INBOUND_ID,
+        panel_port=PANEL_PORT,
+        sub_port=SUB_PORT,
+        logging_enabled=CLIENT_LOGGING_ENABLED
+    )
     client.start()
     # Get info about all connections
     info = await client.info_about_all_clients()
+
 
 asyncio.run(main())
 ```
@@ -92,11 +95,11 @@ asyncio.run(main())
 ### DefaultPayload Example
 
 ```python
-from treex_ui_client import CLientPayload
+from client3x import CLientPayload
 
 payload = ClientPayload(12345, "aaaa-aaaa-aaaa-aaaa",
                         "john.doe@example.com", 3,
-                         17000000000,"1234567890")
+                        17000000000, "1234567890")
 print(str(payload))
 
 # Inbound: 12345,

@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from treex_ui_client import AsyncClient3XUI
-from treex_ui_client.tests.test_config import *
+from client3x import AsyncClient3XUI
+from client3x.tests.test_config import *
 
 
 

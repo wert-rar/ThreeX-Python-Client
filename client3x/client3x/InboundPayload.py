@@ -1,5 +1,5 @@
 import json
-from treex_ui_client.treex_ui_client.payload import Payload
+from client3x.client3x.payload import Payload
 
 class InboundPayload(Payload):
     def __init__(self,port, stream_settings, up=0, down=0, total=0, remark="New", enable=True, expiry_time=0,

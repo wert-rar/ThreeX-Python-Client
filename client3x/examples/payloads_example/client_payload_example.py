@@ -1,7 +1,7 @@
 from pprint import pprint
 from typing import Optional
 
-from treex_ui_client.treex_ui_client import CLientPayload
+from client3x.client3x import CLientPayload
 
 
 def get_payload(inbound_id:int, client_id, email, limitip, expirytime, subid,

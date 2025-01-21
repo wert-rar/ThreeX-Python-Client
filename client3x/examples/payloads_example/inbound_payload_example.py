@@ -1,4 +1,4 @@
-from treex_ui_client.treex_ui_client import InboundPayload
+from client3x.client3x import InboundPayload
 
 port = 8080
 stream_settings = {"network": "tcp"}

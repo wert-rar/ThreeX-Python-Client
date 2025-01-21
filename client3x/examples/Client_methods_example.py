@@ -4,9 +4,9 @@ import uuid
 
 
 from example_config import *
-from treex_ui_client import InboundPayload
-from treex_ui_client.treex_ui_client import Client3XUI, CLientPayload, ClientPayload
-from treex_ui_client.treex_ui_client.PanelResponse import PanelResponse
+from client3x import InboundPayload
+from client3x.client3x import Client3XUI, CLientPayload, ClientPayload
+from client3x.client3x.PanelResponse import PanelResponse
 
 
 

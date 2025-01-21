@@ -1,7 +1,7 @@
 import pprint
 from typing import Optional
 
-from treex_ui_client.treex_ui_client.payload import Payload
+from client3x.client3x.payload import Payload
 
 
 class CLientPayload(Payload):

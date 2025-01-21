@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from treex_ui_client.treex_ui_client import CLientPayload
+from client3x.client3x import CLientPayload
 
 
 class X3UIPayload(CLientPayload):

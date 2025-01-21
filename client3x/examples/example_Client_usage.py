@@ -4,7 +4,7 @@ import uuid
 
 
 from example_config import *
-from treex_ui_client.treex_ui_client import Client3XUI, CLientPayload
+from client3x.client3x import Client3XUI, CLientPayload
 
 
 def main():

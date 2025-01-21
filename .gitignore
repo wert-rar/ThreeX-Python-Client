@@ -79,7 +79,7 @@ fabric.properties
 
 *.pyc
 /.idea
-treex_ui_client/tests/test_config.py
-treex_ui_client/examples/example_config.py
-treex_ui_client/examples/example_config.py
-treex_ui_client/examples/example_config.py
+client3x/tests/test_config.py
+client3x/examples/example_config.py
+client3x/examples/example_config.py
+client3x/examples/example_config.py

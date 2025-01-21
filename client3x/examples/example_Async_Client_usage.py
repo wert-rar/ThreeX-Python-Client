@@ -2,7 +2,7 @@ import asyncio
 import logging
 import uuid
 
-from treex_ui_client.treex_ui_client import AsyncClient3XUI, CLientPayload
+from client3x.client3x import AsyncClient3XUI, CLientPayload
 
 from example_config import *
 
